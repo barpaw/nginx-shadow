@@ -6,11 +6,16 @@ This project contains a custom NGINX build with additional support for HTTP/3 (Q
 
 ## To-Do List
 
+- [ ] **Prepare a build with the latest version of NGINX and the latest dependencies.**
 - [ ] **Create a patch to remove NGINX server name and version information from the source code.**
 - [ ] **Ensure support for HTTP/3 (QUIC).**
 - [ ] **Ensure support for RTMP (Real-Time Messaging Protocol).**
-- [ ] **Add support for STS (Stream TLS) module.**
-- [ ] **Add support for VTS (Virtual Traffic Status) module.**
+- [ ] **Add support for STS (Stream TLS) and VTS (Virtual Traffic Status) modules.**
+- [ ] **Add Brotli compression support, powered by ngx_brotli.**
+- [ ] **Add GeoIP2 support, powered by ngx_http_geoip2_module.**
+- [ ] **Add Headers More support, powered by ngx_headers_more.**
+- [ ] **Remove unnecessary modules to improve performance.**
+
 
 
 
