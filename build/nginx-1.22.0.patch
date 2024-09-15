@@ -1,0 +1,518 @@
+Binary files nginx-1.22.0/.DS_Store and nginx-1.22.0-changes/.DS_Store differ
+diff -ruN nginx-1.22.0/html/index.html nginx-1.22.0-changes/html/index.html
+--- nginx-1.22.0/html/index.html	2022-05-24 01:59:19.000000000 +0200
++++ nginx-1.22.0-changes/html/index.html	2022-08-03 09:40:09.000000000 +0200
+@@ -1,23 +1,9 @@
+ <!DOCTYPE html>
+ <html>
+-<head>
+-<title>Welcome to nginx!</title>
+-<style>
+-html { color-scheme: light dark; }
+-body { width: 35em; margin: 0 auto;
+-font-family: Tahoma, Verdana, Arial, sans-serif; }
+-</style>
+-</head>
+-<body>
+-<h1>Welcome to nginx!</h1>
+-<p>If you see this page, the nginx web server is successfully installed and
+-working. Further configuration is required.</p>
+-
+-<p>For online documentation and support please refer to
+-<a href="http://nginx.org/">nginx.org</a>.<br/>
+-Commercial support is available at
+-<a href="http://nginx.com/">nginx.com</a>.</p>
+-
+-<p><em>Thank you for using nginx.</em></p>
+-</body>
++  <head>
++    <title>Hello!</title>
++  </head>
++  <body>
++    <p>Server is running!</p>
++  </body>
+ </html>
+Binary files nginx-1.22.0/src/.DS_Store and nginx-1.22.0-changes/src/.DS_Store differ
+diff -ruN nginx-1.22.0/src/core/nginx.h nginx-1.22.0-changes/src/core/nginx.h
+--- nginx-1.22.0/src/core/nginx.h	2022-05-24 01:59:19.000000000 +0200
++++ nginx-1.22.0-changes/src/core/nginx.h	2022-08-03 09:40:35.000000000 +0200
+@@ -10,8 +10,8 @@
+ 
+ 
+ #define nginx_version      1022000
+-#define NGINX_VERSION      "1.22.0"
+-#define NGINX_VER          "nginx/" NGINX_VERSION
++#define NGINX_VERSION      ""
++#define NGINX_VER          "" NGINX_VERSION
+ 
+ #ifdef NGX_BUILD
+ #define NGINX_VER_BUILD    NGINX_VER " (" NGX_BUILD ")"
+diff -ruN nginx-1.22.0/src/http/ngx_http_header_filter_module.c nginx-1.22.0-changes/src/http/ngx_http_header_filter_module.c
+--- nginx-1.22.0/src/http/ngx_http_header_filter_module.c	2022-05-24 01:59:19.000000000 +0200
++++ nginx-1.22.0-changes/src/http/ngx_http_header_filter_module.c	2022-08-03 09:41:53.000000000 +0200
+@@ -46,9 +46,9 @@
+ };
+ 
+ 
+-static u_char ngx_http_server_string[] = "Server: nginx" CRLF;
+-static u_char ngx_http_server_full_string[] = "Server: " NGINX_VER CRLF;
+-static u_char ngx_http_server_build_string[] = "Server: " NGINX_VER_BUILD CRLF;
++static u_char ngx_http_server_string[] = "" CRLF;
++static u_char ngx_http_server_full_string[] = "" CRLF;
++static u_char ngx_http_server_build_string[] = "" CRLF;
+ 
+ 
+ static ngx_str_t ngx_http_status_lines[] = {
+@@ -133,7 +133,6 @@
+ 
+ 
+ ngx_http_header_out_t  ngx_http_headers_out[] = {
+-    { ngx_string("Server"), offsetof(ngx_http_headers_out_t, server) },
+     { ngx_string("Date"), offsetof(ngx_http_headers_out_t, date) },
+     { ngx_string("Content-Length"),
+                  offsetof(ngx_http_headers_out_t, content_length) },
+diff -ruN nginx-1.22.0/src/http/ngx_http_special_response.c nginx-1.22.0-changes/src/http/ngx_http_special_response.c
+--- nginx-1.22.0/src/http/ngx_http_special_response.c	2022-05-24 01:59:19.000000000 +0200
++++ nginx-1.22.0-changes/src/http/ngx_http_special_response.c	2022-08-04 17:33:07.000000000 +0200
+@@ -19,33 +19,25 @@
+ 
+ 
+ static u_char ngx_http_error_full_tail[] =
+-"<hr><center>" NGINX_VER "</center>" CRLF
+ "</body>" CRLF
+ "</html>" CRLF
+ ;
+ 
+ 
+ static u_char ngx_http_error_build_tail[] =
+-"<hr><center>" NGINX_VER_BUILD "</center>" CRLF
+ "</body>" CRLF
+ "</html>" CRLF
+ ;
+ 
+ 
+ static u_char ngx_http_error_tail[] =
+-"<hr><center>nginx</center>" CRLF
+ "</body>" CRLF
+ "</html>" CRLF
+ ;
+ 
+ 
+ static u_char ngx_http_msie_padding[] =
+-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
+-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
+-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
+-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
+-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
+-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
++"" CRLF
+ ;
+ 
+ 
+@@ -59,281 +51,306 @@
+ 
+ static char ngx_http_error_301_page[] =
+ "<html>" CRLF
+-"<head><title>301 Moved Permanently</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>301 Moved Permanently</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">301</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Moved Permanently</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_302_page[] =
+ "<html>" CRLF
+-"<head><title>302 Found</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>302 Found</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">302</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Found</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_303_page[] =
+ "<html>" CRLF
+-"<head><title>303 See Other</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>303 See Other</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">303</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">See Other</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_307_page[] =
+ "<html>" CRLF
+-"<head><title>307 Temporary Redirect</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>307 Temporary Redirect</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">307</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Temporary Redirect</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_308_page[] =
+ "<html>" CRLF
+-"<head><title>308 Permanent Redirect</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>308 Permanent Redirect</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">308</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Permanent Redirect</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_400_page[] =
+ "<html>" CRLF
+-"<head><title>400 Bad Request</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>400 Bad Request</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">400</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Bad Request</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_401_page[] =
+ "<html>" CRLF
+-"<head><title>401 Authorization Required</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>401 Authorization Required</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">401</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Unauthorized</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_402_page[] =
+ "<html>" CRLF
+-"<head><title>402 Payment Required</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>402 Payment Required</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">402</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Payment Required</span>" CRLF
+ ;
+ 
+-
+ static char ngx_http_error_403_page[] =
+ "<html>" CRLF
+-"<head><title>403 Forbidden</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>403 Forbidden</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">403</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Forbidden</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_404_page[] =
+ "<html>" CRLF
+-"<head><title>404 Not Found</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>404 Not Found</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">404</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Not Found</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_405_page[] =
+ "<html>" CRLF
+-"<head><title>405 Not Allowed</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>405 Not Allowed</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">405</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Method Not Allowed</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_406_page[] =
+ "<html>" CRLF
+-"<head><title>406 Not Acceptable</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>406 Not Acceptable</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">406</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Not Acceptable</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_408_page[] =
+ "<html>" CRLF
+-"<head><title>408 Request Time-out</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>408 Request Time-out</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">408</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Request Timeout</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_409_page[] =
+ "<html>" CRLF
+-"<head><title>409 Conflict</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>409 Conflict</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">409</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Conflict</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_410_page[] =
+ "<html>" CRLF
+-"<head><title>410 Gone</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>410 Gone</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">410</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Gone</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_411_page[] =
+ "<html>" CRLF
+-"<head><title>411 Length Required</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>411 Length Required</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">411</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Length Required</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_412_page[] =
+ "<html>" CRLF
+-"<head><title>412 Precondition Failed</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>412 Precondition Failed</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">412</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Precondition Failed</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_413_page[] =
+ "<html>" CRLF
+-"<head><title>413 Request Entity Too Large</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>413 Request Entity Too Large</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">413</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Payload Too Large</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_414_page[] =
+ "<html>" CRLF
+-"<head><title>414 Request-URI Too Large</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>414 Request-URI Too Large</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">414</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">URI Too Long</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_415_page[] =
+ "<html>" CRLF
+-"<head><title>415 Unsupported Media Type</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>415 Unsupported Media Type</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">415</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Unsupported Media Type</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_416_page[] =
+ "<html>" CRLF
+-"<head><title>416 Requested Range Not Satisfiable</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>416 Requested Range Not Satisfiable</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">416</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Range Not Satisfiable</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_421_page[] =
+ "<html>" CRLF
+-"<head><title>421 Misdirected Request</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>421 Misdirected Request</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">421</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Misdirected Request</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_429_page[] =
+ "<html>" CRLF
+-"<head><title>429 Too Many Requests</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>429 Too Many Requests</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">429</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Too Many Requests</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_494_page[] =
+ "<html>" CRLF
+-"<head><title>400 Request Header Or Cookie Too Large</title></head>"
+-CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>400 Bad Request</h1></center>" CRLF
+-"<center>Request Header Or Cookie Too Large</center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">494</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Request Header Too Large</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_495_page[] =
+ "<html>" CRLF
+-"<head><title>400 The SSL certificate error</title></head>"
+-CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>400 Bad Request</h1></center>" CRLF
+-"<center>The SSL certificate error</center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">495</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Certificate Error</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_496_page[] =
+ "<html>" CRLF
+-"<head><title>400 No required SSL certificate was sent</title></head>"
+-CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>400 Bad Request</h1></center>" CRLF
+-"<center>No required SSL certificate was sent</center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">496</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">SSL Certificate Required</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_497_page[] =
+ "<html>" CRLF
+-"<head><title>400 The plain HTTP request was sent to HTTPS port</title></head>"
+-CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>400 Bad Request</h1></center>" CRLF
+-"<center>The plain HTTP request was sent to HTTPS port</center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">497</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">HTTP Request Sent to HTTPS Port</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_500_page[] =
+ "<html>" CRLF
+-"<head><title>500 Internal Server Error</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>500 Internal Server Error</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">500</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Internal Server Error</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_501_page[] =
+ "<html>" CRLF
+-"<head><title>501 Not Implemented</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>501 Not Implemented</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">501</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Not Implemented</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_502_page[] =
+ "<html>" CRLF
+-"<head><title>502 Bad Gateway</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>502 Bad Gateway</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">502</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Bad Gateway</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_503_page[] =
+ "<html>" CRLF
+-"<head><title>503 Service Temporarily Unavailable</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>503 Service Temporarily Unavailable</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">503</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Service Unavailable</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_504_page[] =
+ "<html>" CRLF
+-"<head><title>504 Gateway Time-out</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>504 Gateway Time-out</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">504</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Gateway Timeout</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_505_page[] =
+ "<html>" CRLF
+-"<head><title>505 HTTP Version Not Supported</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>505 HTTP Version Not Supported</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">505</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">HTTP Version Not Supported</span>" CRLF
+ ;
+ 
+ 
+ static char ngx_http_error_507_page[] =
+ "<html>" CRLF
+-"<head><title>507 Insufficient Storage</title></head>" CRLF
++"<head><title>Something went wrong.</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" CRLF
+ "<body>" CRLF
+-"<center><h1>507 Insufficient Storage</h1></center>" CRLF
++"<span style=\"font-size: 100px;font-weight: bold;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 40%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);\">507</span>" CRLF
++"<span style=\"font-size: 40px;font-weight: 100;font-family: sans-serif;color: black;position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);white-space: nowrap;\">Insufficient Storage</span>" CRLF
+ ;
+ 
+ 
+diff -ruN nginx-1.22.0/src/http/v2/ngx_http_v2_filter_module.c nginx-1.22.0-changes/src/http/v2/ngx_http_v2_filter_module.c
+--- nginx-1.22.0/src/http/v2/ngx_http_v2_filter_module.c	2022-05-24 01:59:19.000000000 +0200
++++ nginx-1.22.0-changes/src/http/v2/ngx_http_v2_filter_module.c	2022-08-03 09:58:53.000000000 +0200
+@@ -468,16 +468,16 @@
+         if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_ON) {
+             ngx_log_debug1(NGX_LOG_DEBUG_HTTP, fc->log, 0,
+                            "http2 output header: \"server: %s\"",
+-                           NGINX_VER);
++                           "server");
+ 
+         } else if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_BUILD) {
+             ngx_log_debug1(NGX_LOG_DEBUG_HTTP, fc->log, 0,
+                            "http2 output header: \"server: %s\"",
+-                           NGINX_VER_BUILD);
++                           "server");
+ 
+         } else {
+             ngx_log_debug0(NGX_LOG_DEBUG_HTTP, fc->log, 0,
+-                           "http2 output header: \"server: nginx\"");
++                           "http2 output header: \"server: server\"");
+         }
+ 
+         *pos++ = ngx_http_v2_inc_indexed(NGX_HTTP_V2_SERVER_INDEX);
