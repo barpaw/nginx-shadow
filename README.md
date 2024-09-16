@@ -18,6 +18,14 @@ This project contains a custom NGINX build with additional support for HTTP/3 (Q
 - [ ] **Add Headers More support, powered by ngx_headers_more.**
 - [ ] **Remove unnecessary modules to improve performance.**
 
+### Commands
 
+```
+docker build . -t nginx-shadow:0.0.1 --progress=plain 
+```
+
+```
+docker run nginx-shadow:0.0.1    
+```
 
 
