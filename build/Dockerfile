@@ -17,7 +17,7 @@ ARG NGINX_DEVEL_NGINX_VERSION=0.3.3
 ARG SET_MISC_NGINX_VERSION=0.33
 
 # NGINX PATCH FILENAME
-#ARG NGINX_PATCH_FILENAME="nginx-1.22.0"
+ARG NGINX_PATCH_FILENAME="nginx-1.26.2"
 
 # Set TimeZone
 #ENV TZ=Europe/Warsaw
@@ -72,8 +72,8 @@ RUN mkdir -p /var/cache/nginx/client_temp && \
   mkdir -p /var/cache/nginx/proxy_temp
 
 # Apply patch
-#COPY ${NGINX_PATCH_FILENAME}.patch /app/${NGINX_PATCH_FILENAME}.patch
-#RUN cd /app/nginx-${NGINX_VERSION} && patch -p01 < /app/${NGINX_PATCH_FILENAME}.patch
+COPY ${NGINX_PATCH_FILENAME}.patch /app/${NGINX_PATCH_FILENAME}.patch
+RUN cd /app/nginx-${NGINX_VERSION} && patch -p01 < /app/${NGINX_PATCH_FILENAME}.patch
 
 # Configure NGINX
 RUN cd /app/nginx-${NGINX_VERSION} && \
