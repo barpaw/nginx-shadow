@@ -1,0 +1,123 @@
+diff --color -ruN nginx-1.26.2/html/50x.html nginx-1.26.2_changes/html/50x.html
+--- nginx-1.26.2/html/50x.html	2024-09-21 05:17:00.379074287 +0200
++++ nginx-1.26.2_changes/html/50x.html	2024-09-21 05:20:30.265767787 +0200
+@@ -1,19 +1,65 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+-<title>Error</title>
++<title>Error: 50x</title>
+ <style>
+-html { color-scheme: light dark; }
+-body { width: 35em; margin: 0 auto;
+-font-family: Tahoma, Verdana, Arial, sans-serif; }
++html { 
++    color-scheme: light dark; 
++}
++
++body { 
++    width: 35em; 
++    margin: 0 auto;
++    font-family: Tahoma, Verdana, Arial, sans-serif;
++    text-align: center;
++    display: flex;
++    flex-direction: column;
++    justify-content: center;
++    height: 100vh;
++}
++
++span {
++    font-family: sans-serif;
++    white-space: normal;
++    max-width: 90%;
++    display: block;
++    margin: 0 auto;
++}
++
++span.big-text {
++    font-size: 100px;
++    font-weight: bold;
++    margin-bottom: 20px;
++}
++
++span.small-text {
++    font-size: 40px;
++    font-weight: 100;
++}
++
++@media (max-width: 768px) {
++    span.big-text {
++        font-size: 70px;
++    }
++    span.small-text {
++        font-size: 30px;
++    }
++}
++
++@media (max-width: 480px) {
++    span.big-text {
++        font-size: 50px;
++    }
++    span.small-text {
++        font-size: 20px;
++    }
++}
+ </style>
+ </head>
+ <body>
+-<h1>An error occurred.</h1>
+-<p>Sorry, the page you are looking for is currently unavailable.<br/>
+-Please try again later.</p>
+-<p>If you are the system administrator of this resource then you should check
+-the error log for details.</p>
+-<p><em>Faithfully yours, nginx.</em></p>
++
++<span class="big-text">50x</span>
++<span class="small-text">An error occurred</span>
++
+ </body>
+ </html>
+diff --color -ruN nginx-1.26.2/html/index.html nginx-1.26.2_changes/html/index.html
+--- nginx-1.26.2/html/index.html	2024-09-21 05:17:00.379074287 +0200
++++ nginx-1.26.2_changes/html/index.html	2024-09-21 05:20:30.287767543 +0200
+@@ -1,23 +1,13 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+-<title>Welcome to nginx!</title>
++<title>Server is up and running!</title>
+ <style>
+ html { color-scheme: light dark; }
+-body { width: 35em; margin: 0 auto;
+-font-family: Tahoma, Verdana, Arial, sans-serif; }
++body { font-family: sans-serif; }
+ </style>
+ </head>
+ <body>
+-<h1>Welcome to nginx!</h1>
+-<p>If you see this page, the nginx web server is successfully installed and
+-working. Further configuration is required.</p>
+-
+-<p>For online documentation and support please refer to
+-<a href="http://nginx.org/">nginx.org</a>.<br/>
+-Commercial support is available at
+-<a href="http://nginx.com/">nginx.com</a>.</p>
+-
+-<p><em>Thank you for using nginx.</em></p>
++<p>Server is up and running.</p>
+ </body>
+ </html>
+diff --color -ruN nginx-1.26.2/src/core/nginx.h nginx-1.26.2_changes/src/core/nginx.h
+--- nginx-1.26.2/src/core/nginx.h	2024-09-21 05:17:00.382074254 +0200
++++ nginx-1.26.2_changes/src/core/nginx.h	2024-09-21 05:21:06.241367415 +0200
+@@ -10,8 +10,8 @@
+ 
+ 
+ #define nginx_version      1026002
+-#define NGINX_VERSION      "1.26.2"
+-#define NGINX_VER          "nginx/" NGINX_VERSION
++#define NGINX_VERSION      ""
++#define NGINX_VER          "" NGINX_VERSION
+ 
+ #ifdef NGX_BUILD
+ #define NGINX_VER_BUILD    NGINX_VER " (" NGX_BUILD ")"

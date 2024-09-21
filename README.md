@@ -35,6 +35,8 @@ These changes improve the security of the server by preventing automatic detecti
 **Docker | Build image**
 ```
 cd build
+```
+```
 docker build . -t nginx-shadow:0.0.1 --progress=plain 
 ```
 
@@ -45,6 +47,8 @@ docker run nginx-shadow:0.0.1
 
 **Create Patch**
 ```
-cd build
-diff -ruN ../sandbox/nginx-1.26.2/ ../sandbox/nginx-1.26.2_changes/ > nginx-1.26.2.patch
+cd sandbox
+```
+```
+diff -ruN nginx-1.26.2/ nginx-1.26.2_changes/ > ../build/nginx-1.26.2.patch
 ```
