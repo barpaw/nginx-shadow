@@ -18,34 +18,20 @@ static ngx_int_t ngx_http_send_special_response(ngx_http_request_t *r,
 static ngx_int_t ngx_http_send_refresh(ngx_http_request_t *r);
 
 
-static u_char ngx_http_error_full_tail[] =
-"<hr><center>" NGINX_VER "</center>" CRLF
-"</body>" CRLF
-"</html>" CRLF
-;
-
-
-static u_char ngx_http_error_build_tail[] =
-"<hr><center>" NGINX_VER_BUILD "</center>" CRLF
-"</body>" CRLF
-"</html>" CRLF
-;
-
-
 static u_char ngx_http_error_tail[] =
-"<hr><center>nginx</center>" CRLF
 "</body>" CRLF
 "</html>" CRLF
 ;
 
 
 static u_char ngx_http_msie_padding[] =
-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
-"<!-- a padding to disable MSIE and Chrome friendly error page -->" CRLF
+"<!-- padding padding padding padding padding padding padding padding -->" CRLF
+"<!-- padding padding padding padding padding padding padding padding -->" CRLF
+"<!-- padding padding padding padding padding padding padding padding -->" CRLF
+"<!-- padding padding padding padding padding padding padding padding -->" CRLF
+"<!-- padding padding padding padding padding padding padding padding -->" CRLF
+"<!-- padding padding padding padding padding padding padding padding -->" CRLF
+"<!-- padding padding padding padding padding padding padding padding -->" CRLF
 ;
 
 
@@ -59,281 +45,651 @@ static u_char ngx_http_msie_refresh_tail[] =
 
 static char ngx_http_error_301_page[] =
 "<html>" CRLF
-"<head><title>301 Moved Permanently</title></head>" CRLF
+"<head>" CRLF
+"<title>301</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>301 Moved Permanently</h1></center>" CRLF
+"<span class=\"big-text\">301</span>" CRLF
+"<span class=\"small-text\">Moved Permanently</span>" CRLF
 ;
 
 
 static char ngx_http_error_302_page[] =
 "<html>" CRLF
-"<head><title>302 Found</title></head>" CRLF
+"<head>" CRLF
+"<title>302</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>302 Found</h1></center>" CRLF
+"<span class=\"big-text\">302</span>" CRLF
+"<span class=\"small-text\">Found</span>" CRLF
 ;
+
 
 
 static char ngx_http_error_303_page[] =
 "<html>" CRLF
-"<head><title>303 See Other</title></head>" CRLF
+"<head>" CRLF
+"<title>303</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>303 See Other</h1></center>" CRLF
+"<span class=\"big-text\">303</span>" CRLF
+"<span class=\"small-text\">See Other</span>" CRLF
 ;
-
 
 static char ngx_http_error_307_page[] =
 "<html>" CRLF
-"<head><title>307 Temporary Redirect</title></head>" CRLF
+"<head>" CRLF
+"<title>307</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>307 Temporary Redirect</h1></center>" CRLF
+"<span class=\"big-text\">307</span>" CRLF
+"<span class=\"small-text\">Temporary Redirect</span>" CRLF
 ;
-
 
 static char ngx_http_error_308_page[] =
 "<html>" CRLF
-"<head><title>308 Permanent Redirect</title></head>" CRLF
+"<head>" CRLF
+"<title>308</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>308 Permanent Redirect</h1></center>" CRLF
+"<span class=\"big-text\">308</span>" CRLF
+"<span class=\"small-text\">Permanent Redirect</span>" CRLF
 ;
-
 
 static char ngx_http_error_400_page[] =
 "<html>" CRLF
-"<head><title>400 Bad Request</title></head>" CRLF
+"<head>" CRLF
+"<title>400</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>400 Bad Request</h1></center>" CRLF
+"<span class=\"big-text\">400</span>" CRLF
+"<span class=\"small-text\">Bad Request</span>" CRLF
 ;
-
 
 static char ngx_http_error_401_page[] =
 "<html>" CRLF
-"<head><title>401 Authorization Required</title></head>" CRLF
+"<head>" CRLF
+"<title>401</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>401 Authorization Required</h1></center>" CRLF
+"<span class=\"big-text\">401</span>" CRLF
+"<span class=\"small-text\">Authorization Required</span>" CRLF
 ;
-
 
 static char ngx_http_error_402_page[] =
 "<html>" CRLF
-"<head><title>402 Payment Required</title></head>" CRLF
+"<head>" CRLF
+"<title>402</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>402 Payment Required</h1></center>" CRLF
+"<span class=\"big-text\">402</span>" CRLF
+"<span class=\"small-text\">Payment Required</span>" CRLF
 ;
-
 
 static char ngx_http_error_403_page[] =
 "<html>" CRLF
-"<head><title>403 Forbidden</title></head>" CRLF
+"<head>" CRLF
+"<title>403</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>403 Forbidden</h1></center>" CRLF
+"<span class=\"big-text\">403</span>" CRLF
+"<span class=\"small-text\">Forbidden</span>" CRLF
 ;
-
 
 static char ngx_http_error_404_page[] =
 "<html>" CRLF
-"<head><title>404 Not Found</title></head>" CRLF
+"<head>" CRLF
+"<title>404</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>404 Not Found</h1></center>" CRLF
+"<span class=\"big-text\">404</span>" CRLF
+"<span class=\"small-text\">Not Found</span>" CRLF
 ;
-
 
 static char ngx_http_error_405_page[] =
 "<html>" CRLF
-"<head><title>405 Not Allowed</title></head>" CRLF
+"<head>" CRLF
+"<title>405</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>405 Not Allowed</h1></center>" CRLF
+"<span class=\"big-text\">405</span>" CRLF
+"<span class=\"small-text\">Not Allowed</span>" CRLF
 ;
-
 
 static char ngx_http_error_406_page[] =
 "<html>" CRLF
-"<head><title>406 Not Acceptable</title></head>" CRLF
+"<head>" CRLF
+"<title>406</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>406 Not Acceptable</h1></center>" CRLF
+"<span class=\"big-text\">406</span>" CRLF
+"<span class=\"small-text\">Not Acceptable</span>" CRLF
 ;
-
 
 static char ngx_http_error_408_page[] =
 "<html>" CRLF
-"<head><title>408 Request Time-out</title></head>" CRLF
+"<head>" CRLF
+"<title>408</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>408 Request Time-out</h1></center>" CRLF
+"<span class=\"big-text\">408</span>" CRLF
+"<span class=\"small-text\">Request Time-out</span>" CRLF
 ;
-
 
 static char ngx_http_error_409_page[] =
 "<html>" CRLF
-"<head><title>409 Conflict</title></head>" CRLF
+"<head>" CRLF
+"<title>409</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>409 Conflict</h1></center>" CRLF
+"<span class=\"big-text\">409</span>" CRLF
+"<span class=\"small-text\">Conflict</span>" CRLF
 ;
-
 
 static char ngx_http_error_410_page[] =
 "<html>" CRLF
-"<head><title>410 Gone</title></head>" CRLF
+"<head>" CRLF
+"<title>410</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>410 Gone</h1></center>" CRLF
+"<span class=\"big-text\">410</span>" CRLF
+"<span class=\"small-text\">Gone</span>" CRLF
 ;
-
 
 static char ngx_http_error_411_page[] =
 "<html>" CRLF
-"<head><title>411 Length Required</title></head>" CRLF
+"<head>" CRLF
+"<title>411</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>411 Length Required</h1></center>" CRLF
+"<span class=\"big-text\">411</span>" CRLF
+"<span class=\"small-text\">Length Required</span>" CRLF
 ;
-
 
 static char ngx_http_error_412_page[] =
 "<html>" CRLF
-"<head><title>412 Precondition Failed</title></head>" CRLF
+"<head>" CRLF
+"<title>412</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>412 Precondition Failed</h1></center>" CRLF
+"<span class=\"big-text\">412</span>" CRLF
+"<span class=\"small-text\">Precondition Failed</span>" CRLF
 ;
-
 
 static char ngx_http_error_413_page[] =
 "<html>" CRLF
-"<head><title>413 Request Entity Too Large</title></head>" CRLF
+"<head>" CRLF
+"<title>413</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>413 Request Entity Too Large</h1></center>" CRLF
+"<span class=\"big-text\">413</span>" CRLF
+"<span class=\"small-text\">Request Entity Too Large</span>" CRLF
 ;
-
 
 static char ngx_http_error_414_page[] =
 "<html>" CRLF
-"<head><title>414 Request-URI Too Large</title></head>" CRLF
+"<head>" CRLF
+"<title>414</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>414 Request-URI Too Large</h1></center>" CRLF
+"<span class=\"big-text\">414</span>" CRLF
+"<span class=\"small-text\">Request-URI Too Large</span>" CRLF
 ;
-
 
 static char ngx_http_error_415_page[] =
 "<html>" CRLF
-"<head><title>415 Unsupported Media Type</title></head>" CRLF
+"<head>" CRLF
+"<title>415</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>415 Unsupported Media Type</h1></center>" CRLF
+"<span class=\"big-text\">415</span>" CRLF
+"<span class=\"small-text\">Unsupported Media Type</span>" CRLF
 ;
-
 
 static char ngx_http_error_416_page[] =
 "<html>" CRLF
-"<head><title>416 Requested Range Not Satisfiable</title></head>" CRLF
+"<head>" CRLF
+"<title>416</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>416 Requested Range Not Satisfiable</h1></center>" CRLF
+"<span class=\"big-text\">416</span>" CRLF
+"<span class=\"small-text\">Requested Range Not Satisfiable</span>" CRLF
 ;
-
 
 static char ngx_http_error_421_page[] =
 "<html>" CRLF
-"<head><title>421 Misdirected Request</title></head>" CRLF
+"<head>" CRLF
+"<title>421</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>421 Misdirected Request</h1></center>" CRLF
+"<span class=\"big-text\">421</span>" CRLF
+"<span class=\"small-text\">Misdirected Request</span>" CRLF
 ;
-
 
 static char ngx_http_error_429_page[] =
 "<html>" CRLF
-"<head><title>429 Too Many Requests</title></head>" CRLF
+"<head>" CRLF
+"<title>429</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>429 Too Many Requests</h1></center>" CRLF
+"<span class=\"big-text\">429</span>" CRLF
+"<span class=\"small-text\">Too Many Requests</span>" CRLF
 ;
-
 
 static char ngx_http_error_494_page[] =
 "<html>" CRLF
-"<head><title>400 Request Header Or Cookie Too Large</title></head>"
-CRLF
+"<head>" CRLF
+"<title>400</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>400 Bad Request</h1></center>" CRLF
-"<center>Request Header Or Cookie Too Large</center>" CRLF
+"<span class=\"big-text\">400</span>" CRLF
+"<span class=\"small-text\">Bad Request: Request Header Or Cookie Too Large</span>" CRLF
 ;
-
 
 static char ngx_http_error_495_page[] =
 "<html>" CRLF
-"<head><title>400 The SSL certificate error</title></head>"
-CRLF
+"<head>" CRLF
+"<title>400</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>400 Bad Request</h1></center>" CRLF
-"<center>The SSL certificate error</center>" CRLF
+"<span class=\"big-text\">400</span>" CRLF
+"<span class=\"small-text\">Bad Request: The SSL certificate error</span>" CRLF
 ;
-
 
 static char ngx_http_error_496_page[] =
 "<html>" CRLF
-"<head><title>400 No required SSL certificate was sent</title></head>"
-CRLF
+"<head>" CRLF
+"<title>400</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>400 Bad Request</h1></center>" CRLF
-"<center>No required SSL certificate was sent</center>" CRLF
+"<span class=\"big-text\">400</span>" CRLF
+"<span class=\"small-text\">Bad Request: No required SSL certificate was sent</span>" CRLF
 ;
-
 
 static char ngx_http_error_497_page[] =
 "<html>" CRLF
-"<head><title>400 The plain HTTP request was sent to HTTPS port</title></head>"
-CRLF
+"<head>" CRLF
+"<title>400</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>400 Bad Request</h1></center>" CRLF
-"<center>The plain HTTP request was sent to HTTPS port</center>" CRLF
+"<span class=\"big-text\">400</span>" CRLF
+"<span class=\"small-text\">Bad Request: The plain HTTP request was sent to HTTPS port</span>" CRLF
 ;
-
 
 static char ngx_http_error_500_page[] =
 "<html>" CRLF
-"<head><title>500 Internal Server Error</title></head>" CRLF
+"<head>" CRLF
+"<title>500</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>500 Internal Server Error</h1></center>" CRLF
+"<span class=\"big-text\">500</span>" CRLF
+"<span class=\"small-text\">Internal Server Error</span>" CRLF
 ;
-
 
 static char ngx_http_error_501_page[] =
 "<html>" CRLF
-"<head><title>501 Not Implemented</title></head>" CRLF
+"<head>" CRLF
+"<title>501</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>501 Not Implemented</h1></center>" CRLF
+"<span class=\"big-text\">501</span>" CRLF
+"<span class=\"small-text\">Not Implemented</span>" CRLF
 ;
-
 
 static char ngx_http_error_502_page[] =
 "<html>" CRLF
-"<head><title>502 Bad Gateway</title></head>" CRLF
+"<head>" CRLF
+"<title>502</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>502 Bad Gateway</h1></center>" CRLF
+"<span class=\"big-text\">502</span>" CRLF
+"<span class=\"small-text\">Bad Gateway</span>" CRLF
 ;
-
 
 static char ngx_http_error_503_page[] =
 "<html>" CRLF
-"<head><title>503 Service Temporarily Unavailable</title></head>" CRLF
+"<head>" CRLF
+"<title>503</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>503 Service Temporarily Unavailable</h1></center>" CRLF
+"<span class=\"big-text\">503</span>" CRLF
+"<span class=\"small-text\">Service Temporarily Unavailable</span>" CRLF
 ;
-
 
 static char ngx_http_error_504_page[] =
 "<html>" CRLF
-"<head><title>504 Gateway Time-out</title></head>" CRLF
+"<head>" CRLF
+"<title>504</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>504 Gateway Time-out</h1></center>" CRLF
+"<span class=\"big-text\">504</span>" CRLF
+"<span class=\"small-text\">Gateway Time-out</span>" CRLF
 ;
-
 
 static char ngx_http_error_505_page[] =
 "<html>" CRLF
-"<head><title>505 HTTP Version Not Supported</title></head>" CRLF
+"<head>" CRLF
+"<title>505</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>505 HTTP Version Not Supported</h1></center>" CRLF
+"<span class=\"big-text\">505</span>" CRLF
+"<span class=\"small-text\">HTTP Version Not Supported</span>" CRLF
 ;
-
 
 static char ngx_http_error_507_page[] =
 "<html>" CRLF
-"<head><title>507 Insufficient Storage</title></head>" CRLF
+"<head>" CRLF
+"<title>507</title>" CRLF
+"<style>" CRLF
+"html { color-scheme: light dark; }" CRLF
+"body { width: 35em; margin: 0 auto; font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; }" CRLF
+"span { font-family: sans-serif; white-space: normal; max-width: 90%; display: block; margin: 0 auto; }" CRLF
+"span.big-text { font-size: 100px; font-weight: bold; margin-bottom: 20px; }" CRLF
+"span.small-text { font-size: 40px; font-weight: 100; }" CRLF
+"@media (max-width: 768px) { span.big-text { font-size: 70px; } span.small-text { font-size: 30px; } }" CRLF
+"@media (max-width: 480px) { span.big-text { font-size: 50px; } span.small-text { font-size: 20px; } }" CRLF
+"</style>" CRLF
+"</head>" CRLF
 "<body>" CRLF
-"<center><h1>507 Insufficient Storage</h1></center>" CRLF
+"<span class=\"big-text\">507</span>" CRLF
+"<span class=\"small-text\">Insufficient Storage</span>" CRLF
 ;
 
 
@@ -680,18 +1036,10 @@ ngx_http_send_special_response(ngx_http_request_t *r,
     ngx_uint_t    msie_padding;
     ngx_chain_t   out[3];
 
-    if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_ON) {
-        len = sizeof(ngx_http_error_full_tail) - 1;
-        tail = ngx_http_error_full_tail;
 
-    } else if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_BUILD) {
-        len = sizeof(ngx_http_error_build_tail) - 1;
-        tail = ngx_http_error_build_tail;
-
-    } else {
-        len = sizeof(ngx_http_error_tail) - 1;
-        tail = ngx_http_error_tail;
-    }
+    len = sizeof(ngx_http_error_tail) - 1;
+    tail = ngx_http_error_tail;
+    
 
     msie_padding = 0;
 
