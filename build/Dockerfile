@@ -9,7 +9,7 @@ WORKDIR /app
 ARG NGINX_VERSION=1.26.2
 ARG OPENSSL_VERSION=3.0.15
 ARG PCRE2_VERSION=10.44
-ARG ZLIB_VERSION=1.3.1
+ARG ZLIB_CLOUDFLARE_COMMIT_SHA=92530568d2c128b4432467b76a3b54d93d6350bd
 
 # 3RD PARTY MODULES
 ARG HEADERS_MORE_NGINX_VERSION=0.37
@@ -60,12 +60,14 @@ RUN apk update && \
 RUN wget "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-${PCRE2_VERSION}/pcre2-${PCRE2_VERSION}.tar.gz" -O /app/pcre2.tar.gz && tar xzvf /app/pcre2.tar.gz && \
    wget "https://github.com/openresty/headers-more-nginx-module/archive/refs/tags/v${HEADERS_MORE_NGINX_VERSION}.tar.gz" -O /app/headers_more.tar.gz && tar xzvf /app/headers_more.tar.gz && \
   wget "https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz" -O /app/openssl.tar.gz && tar xzvf /app/openssl.tar.gz && \
-  wget "https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz" -O /app/zlib.tar.gz && tar xzvf /app/zlib.tar.gz && \
   wget "https://github.com/openresty/set-misc-nginx-module/archive/refs/tags/v${SET_MISC_NGINX_VERSION}.tar.gz" -O /app/set_misc.tar.gz && tar xzvf /app/set_misc.tar.gz && \
   wget "https://github.com/vision5/ngx_devel_kit/archive/refs/tags/v${NGINX_DEVEL_NGINX_VERSION}.tar.gz" -O /app/nginx_devel.tar.gz && tar xzvf /app/nginx_devel.tar.gz && \
   wget "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" -O /app/nginx.tar.gz && tar xzvf /app/nginx.tar.gz
 
-  
+# Clone latest Cloudflare zlib library 
+RUN git clone https://github.com/cloudflare/zlib.git -b gcc.amd64 /app/zlib-cf && \
+    cd /app/zlib-cf && \
+    git checkout ${ZLIB_CLOUDFLARE_COMMIT_SHA}
 
 # Create temp folders
 RUN mkdir -p /var/cache/nginx/client_temp && \
@@ -119,7 +121,7 @@ RUN cd /app/nginx-${NGINX_VERSION} && \
   --with-ld-opt='-Wl,-rpath,/usr/local/lib' \
   --with-pcre=/app/pcre2-${PCRE2_VERSION} \
   --with-pcre-jit \
-  --with-zlib=/app/zlib-${ZLIB_VERSION} \
+  --with-zlib=/app/zlib-cf \
   --with-openssl=/app/openssl-${OPENSSL_VERSION} \
   --with-openssl-opt=no-nextprotoneg \
   --with-debug && \
