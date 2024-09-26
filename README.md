@@ -8,28 +8,21 @@ This project contains a custom NGINX build with additional support for HTTP/3 (Q
 
 ## Changes compared to the original version of NGINX
 
-- [X] **Configure the Dockerfile to compile NGINX with the latest version and up-to-date core dependencies.** 
-
-
-    - [X] **Use stable [nginx (1.26.2)](https://nginx.org/en/download.html)**
-
-    - [X] **Use [openssl (3.0.15)](https://openssl-library.org/source/index.html)**
-
-    - [X] **Use [pcre2 (10.44)](https://github.com/PCRE2Project/pcre2/releases)**
-
-    - [X] **Use [cloudflare zlib](https://github.com/cloudflare/zlib/commits/gcc.amd64/) library. [[Article]](https://blog.cloudflare.com/cloudflare-fights-cancer/)**
-
-- [X] **Create a patch to remove the Server header and change default and error messages in the NGINX source to enhance security by preventing the server's name and version from being exposed. [[See Details]](#changes-in-nginx-source-code)**
-
-- [ ] **Nginx built-in modules selection** 
-    - [ ] **Hardening**
-    - [ ] **Ensure support for HTTP/3 (QUIC).**
-- [ ] **Nginx Third-party modules selection.** 
-    - [ ] **Ensure support for RTMP (Real-Time Messaging Protocol).**
-    - [ ] **Add support for VTS (Virtual Traffic Status) and STS (Stream TLS) modules.**
-    - [ ] **Add Brotli compression support, powered by ngx_brotli.**
-    - [ ] **Add GeoIP2 support, powered by ngx_http_geoip2_module.**
-    - [ ] **Add Headers More support, powered by ngx_headers_more.**
+- [X] Configure the Dockerfile to compile NGINX with the latest version and up-to-date core dependencies.
+    - [X] Use stable [nginx (1.26.2)](https://nginx.org/en/download.html)
+    - [X] Use [openssl (3.0.15)](https://openssl-library.org/source/index.html)
+    - [X] Use [pcre2 (10.44)](https://github.com/PCRE2Project/pcre2/releases)
+    - [X] Use [cloudflare zlib](https://github.com/cloudflare/zlib/commits/gcc.amd64/) library [[Read More]](https://blog.cloudflare.com/cloudflare-fights-cancer/)
+- [X] Create a patch to remove the Server header and change default and error messages in the NGINX source to enhance security by preventing the server's name and version from being exposed. [[See Details]](#changes-in-nginx-source-code)
+- [ ] Nginx built-in modules selection
+    - [ ] Hardening
+    - [ ] Ensure support for HTTP/3 (QUIC).
+- [ ] Nginx Third-party modules selection.
+    - [ ] Ensure support for RTMP (Real-Time Messaging Protocol).
+    - [ ] Add support for VTS (Virtual Traffic Status) and STS (Stream TLS) modules.
+    - [ ] Add Brotli compression support, powered by ngx_brotli.
+    - [ ] Add GeoIP2 support, powered by ngx_http_geoip2_module.
+    - [ ] Add Headers More support, powered by ngx_headers_more.
 
 ## Changes in Nginx Source Code
 
