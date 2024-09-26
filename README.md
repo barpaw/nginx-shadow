@@ -2,21 +2,21 @@
 
 # nginx-shadow
 
-## NGINX Custom Build with HTTP/3 and RTMP Support
+## NGINX Custom Build with HTTP/3 (QUIC) and RTMP Support
 
 This project contains a custom NGINX build with additional support for HTTP/3 (QUIC) and RTMP streaming protocol. Additionally, it includes a patch to remove server information from the HTTP headers for improved security.
 
 ## Changes compared to the original version of NGINX
 
 - [X] Configure the Dockerfile to compile NGINX with the latest version and up-to-date core dependencies.
-    - [X] Use stable [nginx (1.26.2)](https://nginx.org/en/download.html)
-    - [X] Use [openssl (3.0.15)](https://openssl-library.org/source/index.html)
-    - [X] Use [pcre2 (10.44)](https://github.com/PCRE2Project/pcre2/releases)
-    - [X] Use [cloudflare zlib](https://github.com/cloudflare/zlib/commits/gcc.amd64/) library [[Read More]](https://blog.cloudflare.com/cloudflare-fights-cancer/)
+    - [X] stable [nginx (1.26.2)](https://nginx.org/en/download.html)
+    - [X] [boringssl](https://github.com/google/boringssl/commits/master/) commit  [40dd941](https://github.com/google/boringssl/commit/40dd94116ba03678226443ba20c5887459c9bf16)
+    - [X] [pcre2 (10.44)](https://github.com/PCRE2Project/pcre2/releases)
+    - [X] [zlib](https://github.com/cloudflare/zlib/commits/gcc.amd64/) [(cloudflare)](https://blog.cloudflare.com/cloudflare-fights-cancer/) commit   [9253056](https://github.com/cloudflare/zlib/commit/92530568d2c128b4432467b76a3b54d93d6350bd) 
 - [X] Create a patch to remove the Server header and change default and error messages in the NGINX source to enhance security by preventing the server's name and version from being exposed. [[See Details]](#changes-in-nginx-source-code)
-- [ ] Nginx built-in modules selection
+- [ ] Nginx built-in modules selection.
+    - [X] Add support for HTTP/3 (QUIC)
     - [ ] Hardening
-    - [ ] Ensure support for HTTP/3 (QUIC).
 - [ ] Nginx Third-party modules selection.
     - [ ] Ensure support for RTMP (Real-Time Messaging Protocol).
     - [ ] Add support for VTS (Virtual Traffic Status) and STS (Stream TLS) modules.
@@ -34,6 +34,16 @@ In the patch applied to the Nginx source code during the image build process to 
 
 
 These changes improve the security of the server by preventing automatic detection tools from identifying the server software and version, thereby reducing the risk of targeted attacks.
+
+
+### Build info
+
+| name | version/commit/tag | repo/site | info |
+|-----------------|--------------------|-----------|------|
+| nginx           |         [1.26.2](https://nginx.org/en/download.html)           |           |      |
+| boringssl       |                    |           |      |
+| pcre2           |                    |           |      |
+| zlib            |                    |           |      |
 
 ### Commands
 

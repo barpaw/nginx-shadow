@@ -10,6 +10,7 @@ ARG NGINX_VERSION=1.26.2
 ARG OPENSSL_VERSION=3.0.15
 ARG PCRE2_VERSION=10.44
 ARG ZLIB_CLOUDFLARE_COMMIT_SHA=92530568d2c128b4432467b76a3b54d93d6350bd
+ARG BORINGSSL_COMMIT_SHA=40dd94116ba03678226443ba20c5887459c9bf16
 
 # 3RD PARTY MODULES
 ARG HEADERS_MORE_NGINX_VERSION=0.37
@@ -27,39 +28,38 @@ ARG NGINX_PATCH_FILENAME="nginx-1.26.2"
 RUN addgroup -S nonroot && adduser -S -G nonroot -s /bin/false nonroot
 
 # Download needed packages from repository
-RUN apk update && \
-    apk add --no-cache --virtual .build-deps \
-      linux-headers \
-      build-base \
-      curl \
-      git \
-      cmake \
-      wget \
-      gcc \
-      make \
-      unzip \
-      ca-certificates \
-      autoconf \
-      automake \
-      libtool \
-      pkgconf \
-      zlib-dev \
-      openssl-dev \
-      pcre-dev \
-      libxml2-dev \
-      yajl-dev \
-      lua5.2-dev \
-      geoip-dev && \
-    apk add --no-cache \
-      libcurl \
-      pax-utils && \
-    rm -rf /var/cache/apk/*
+# RUN apk update && \
+#     apk add --no-cache --virtual .build-deps \
+#       linux-headers \
+#       build-base \
+#       curl \
+#       git \
+#       cmake \
+#       wget \
+#       gcc \
+#       make \
+#       unzip \
+#       ca-certificates \
+#       autoconf \
+#       automake \
+#       libtool \
+#       pkgconf \
+#       zlib-dev \
+#       openssl-dev \
+#       pcre-dev \
+#       libxml2-dev \
+#       yajl-dev \
+#       lua5.2-dev \
+#       geoip-dev \
+#       libcurl \
+#       pax-utils && \
+#     rm -rf /var/cache/apk/*
 
+RUN apk add --no-cache git make cmake ninja gcc openssl-dev linux-headers g++ perl-dev patch
 
 # Download dependencies
 RUN wget "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-${PCRE2_VERSION}/pcre2-${PCRE2_VERSION}.tar.gz" -O /app/pcre2.tar.gz && tar xzvf /app/pcre2.tar.gz && \
    wget "https://github.com/openresty/headers-more-nginx-module/archive/refs/tags/v${HEADERS_MORE_NGINX_VERSION}.tar.gz" -O /app/headers_more.tar.gz && tar xzvf /app/headers_more.tar.gz && \
-  wget "https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz" -O /app/openssl.tar.gz && tar xzvf /app/openssl.tar.gz && \
   wget "https://github.com/openresty/set-misc-nginx-module/archive/refs/tags/v${SET_MISC_NGINX_VERSION}.tar.gz" -O /app/set_misc.tar.gz && tar xzvf /app/set_misc.tar.gz && \
   wget "https://github.com/vision5/ngx_devel_kit/archive/refs/tags/v${NGINX_DEVEL_NGINX_VERSION}.tar.gz" -O /app/nginx_devel.tar.gz && tar xzvf /app/nginx_devel.tar.gz && \
   wget "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" -O /app/nginx.tar.gz && tar xzvf /app/nginx.tar.gz
@@ -69,6 +69,27 @@ RUN git clone https://github.com/cloudflare/zlib.git -b gcc.amd64 /app/zlib-cf &
     cd /app/zlib-cf && \
     git checkout ${ZLIB_CLOUDFLARE_COMMIT_SHA}
 
+
+RUN echo "Building pcre2-${PCRE2_VERSION} ..." && \
+    cd /app/pcre2-${PCRE2_VERSION} && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    make -j$(nproc) && make install
+
+
+
+RUN echo "Cloning boringssl $BORINGSSL_COMMIT_SHA ..." && \
+    git clone https://github.com/google/boringssl.git -b master /app/boringssl && \
+    cd /app/boringssl && \
+    git checkout ${BORINGSSL_COMMIT_SHA} && \
+    echo "Building boringssl ..." && \
+    cd /app/boringssl && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    make -j$(nproc) && make install
+
 # Create temp folders
 RUN mkdir -p /var/cache/nginx/client_temp && \
   mkdir -p /var/cache/nginx/proxy_temp
@@ -77,6 +98,7 @@ RUN mkdir -p /var/cache/nginx/client_temp && \
 COPY ${NGINX_PATCH_FILENAME}.patch /app/${NGINX_PATCH_FILENAME}.patch
 RUN cd /app/nginx-${NGINX_VERSION} && patch -p01 < /app/${NGINX_PATCH_FILENAME}.patch
 
+RUN ls -la /app/boringssl
 # Configure NGINX
 RUN cd /app/nginx-${NGINX_VERSION} && \
   ./configure \
@@ -96,6 +118,7 @@ RUN cd /app/nginx-${NGINX_VERSION} && \
   --with-file-aio \
   --with-http_ssl_module \
   --with-http_v2_module \
+  --with-http_v3_module \
   --with-http_stub_status_module \
   --without-http_ssi_module \
   --without-http_userid_module \
@@ -117,17 +140,16 @@ RUN cd /app/nginx-${NGINX_VERSION} && \
   --add-module=/app/ngx_devel_kit-${NGINX_DEVEL_NGINX_VERSION} \
   --add-module=/app/set-misc-nginx-module-${SET_MISC_NGINX_VERSION} \
   --add-module=/app/headers-more-nginx-module-${HEADERS_MORE_NGINX_VERSION}  \
-  --with-cc-opt=-O2 \
-  --with-ld-opt='-Wl,-rpath,/usr/local/lib' \
-  --with-pcre=/app/pcre2-${PCRE2_VERSION} \
+  --with-cc=c++ \
+  --with-cc-opt="-I/app/boringssl/include -I/app/pcre2/include -O2 -x c" \
+  --with-ld-opt="-L/app/boringssl/build/ssl -L/app/boringssl/build/crypto -L/app/pcre2/lib -Wl,-rpath,/app/boringssl/build/ssl" \
   --with-pcre-jit \
   --with-zlib=/app/zlib-cf \
-  --with-openssl=/app/openssl-${OPENSSL_VERSION} \
-  --with-openssl-opt=no-nextprotoneg \
   --with-debug && \
   echo $(eval $CONFIGURE) && \
   make -j$(nproc) && make install
 
+RUN nginx -V
 
 RUN chown -R nonroot:nonroot /etc/nginx
 RUN chown -R nonroot:nonroot /etc/ssl/
