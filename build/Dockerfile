@@ -7,10 +7,9 @@ WORKDIR /app
 
 # NGINX CORE
 ARG NGINX_VERSION=1.26.2
-ARG OPENSSL_VERSION=3.0.15
 ARG PCRE2_VERSION=10.44
-ARG ZLIB_CLOUDFLARE_COMMIT_SHA=92530568d2c128b4432467b76a3b54d93d6350bd
-ARG BORINGSSL_COMMIT_SHA=40dd94116ba03678226443ba20c5887459c9bf16
+ARG ZLIB_CLOUDFLARE_COMMIT_SHA=872e5fb3cf88bb281e19a8327b3ea0889cc34773
+ARG BORINGSSL_COMMIT_SHA=571c76e919c0c48219ced35bef83e1fc83b00eed
 
 # 3RD PARTY MODULES
 ARG HEADERS_MORE_NGINX_VERSION=0.37
@@ -55,40 +54,65 @@ RUN addgroup -S nonroot && adduser -S -G nonroot -s /bin/false nonroot
 #       pax-utils && \
 #     rm -rf /var/cache/apk/*
 
-RUN apk add --no-cache git make cmake ninja gcc openssl-dev linux-headers g++ perl-dev patch
+RUN apk add --no-cache git make cmake ninja gcc openssl-dev linux-headers g++ perl-dev patch bzip2-dev readline-dev libedit-dev zlib-dev libunwind-dev
 
-# Download dependencies
-RUN wget "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-${PCRE2_VERSION}/pcre2-${PCRE2_VERSION}.tar.gz" -O /app/pcre2.tar.gz && tar xzvf /app/pcre2.tar.gz && \
-   wget "https://github.com/openresty/headers-more-nginx-module/archive/refs/tags/v${HEADERS_MORE_NGINX_VERSION}.tar.gz" -O /app/headers_more.tar.gz && tar xzvf /app/headers_more.tar.gz && \
-  wget "https://github.com/openresty/set-misc-nginx-module/archive/refs/tags/v${SET_MISC_NGINX_VERSION}.tar.gz" -O /app/set_misc.tar.gz && tar xzvf /app/set_misc.tar.gz && \
-  wget "https://github.com/vision5/ngx_devel_kit/archive/refs/tags/v${NGINX_DEVEL_NGINX_VERSION}.tar.gz" -O /app/nginx_devel.tar.gz && tar xzvf /app/nginx_devel.tar.gz && \
-  wget "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" -O /app/nginx.tar.gz && tar xzvf /app/nginx.tar.gz
 
-# Clone latest Cloudflare zlib library 
-RUN git clone https://github.com/cloudflare/zlib.git -b gcc.amd64 /app/zlib-cf && \
+# Downloading NGINX
+RUN echo "Downloading NGINX version ${NGINX_VERSION}" && \
+    wget "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" -O /app/nginx.tar.gz && tar xzvf /app/nginx.tar.gz
+
+# Clone and Build Cloudflare zlib library 
+RUN echo "Cloning zlib-cf... SHA: ${ZLIB_CLOUDFLARE_COMMIT_SHA}" && \
+    git clone https://github.com/cloudflare/zlib.git -b gcc.amd64 /app/zlib-cf && \
     cd /app/zlib-cf && \
-    git checkout ${ZLIB_CLOUDFLARE_COMMIT_SHA}
-
-
-RUN echo "Building pcre2-${PCRE2_VERSION} ..." && \
-    cd /app/pcre2-${PCRE2_VERSION} && \
+    git checkout ${ZLIB_CLOUDFLARE_COMMIT_SHA} && \
+    echo "Building zlib-cf..." && \
     mkdir build && \
     cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-O3 -march=native -flto" .. && \
     make -j$(nproc) && make install
 
-
-
-RUN echo "Cloning boringssl $BORINGSSL_COMMIT_SHA ..." && \
+# Clone and Build boringssl 
+RUN echo "Cloning boringssl... SHA: ${BORINGSSL_COMMIT_SHA}" && \
     git clone https://github.com/google/boringssl.git -b master /app/boringssl && \
     cd /app/boringssl && \
     git checkout ${BORINGSSL_COMMIT_SHA} && \
-    echo "Building boringssl ..." && \
-    cd /app/boringssl && \
+    echo "Building boringssl..." && \
     mkdir build && \
     cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-O3 -march=native" -DCMAKE_CXX_FLAGS="-O3 -march=native -flto" .. && \
     make -j$(nproc) && make install
+
+# Clone and Build pcre2 
+RUN echo "Cloning PCRE2... Version: ${PCRE2_VERSION}" && \
+    git clone https://github.com/PCRE2Project/pcre2.git /app/pcre2 && \
+    cd /app/pcre2 && \
+    git checkout tags/pcre2-${PCRE2_VERSION} && \
+    echo "Building PCRE2..." && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DPCRE2_BUILD_PCRE2GREP=ON -DPCRE2_SUPPORT_JIT=ON -DCMAKE_C_FLAGS="-O3 -march=native" .. && \
+    make -j$(nproc) && make install
+
+# ---NGINX MODULES--- #
+
+# Clone the headers-more-nginx-module repository and checkout the specific tag
+RUN echo "Cloning headers-more-nginx-module version ${HEADERS_MORE_NGINX_VERSION}" && \
+    git clone https://github.com/openresty/headers-more-nginx-module.git /app/headers-more-nginx-module && \
+    cd /app/headers-more-nginx-module && \
+    git checkout tags/v${HEADERS_MORE_NGINX_VERSION} -b build
+
+# Clone the set-misc-nginx-module repository and checkout the specific tag
+RUN echo "Cloning set-misc-nginx-module version ${SET_MISC_NGINX_VERSION}" && \
+    git clone https://github.com/openresty/set-misc-nginx-module.git /app/set-misc-nginx-module && \
+    cd /app/set-misc-nginx-module && \
+    git checkout tags/v${SET_MISC_NGINX_VERSION} -b build
+
+# Clone the ngx_devel_kit repository and checkout the specific tag
+RUN echo "Cloning ngx_devel_kit version ${NGINX_DEVEL_NGINX_VERSION}" && \
+    git clone https://github.com/vision5/ngx_devel_kit.git /app/ngx_devel_kit && \
+    cd /app/ngx_devel_kit && \
+    git checkout tags/v${NGINX_DEVEL_NGINX_VERSION} -b build
 
 # Create temp folders
 RUN mkdir -p /var/cache/nginx/client_temp && \
@@ -98,7 +122,6 @@ RUN mkdir -p /var/cache/nginx/client_temp && \
 COPY ${NGINX_PATCH_FILENAME}.patch /app/${NGINX_PATCH_FILENAME}.patch
 RUN cd /app/nginx-${NGINX_VERSION} && patch -p01 < /app/${NGINX_PATCH_FILENAME}.patch
 
-RUN ls -la /app/boringssl
 # Configure NGINX
 RUN cd /app/nginx-${NGINX_VERSION} && \
   ./configure \
@@ -137,9 +160,9 @@ RUN cd /app/nginx-${NGINX_VERSION} && \
   --without-mail_pop3_module \
   --without-mail_imap_module \
   --without-mail_smtp_module \
-  --add-module=/app/ngx_devel_kit-${NGINX_DEVEL_NGINX_VERSION} \
-  --add-module=/app/set-misc-nginx-module-${SET_MISC_NGINX_VERSION} \
-  --add-module=/app/headers-more-nginx-module-${HEADERS_MORE_NGINX_VERSION}  \
+  --add-module=/app/ngx_devel_kit \
+  --add-module=/app/set-misc-nginx-module \
+  --add-module=/app/headers-more-nginx-module  \
   --with-cc=c++ \
   --with-cc-opt="-I/app/boringssl/include -I/app/pcre2/include -O2 -x c" \
   --with-ld-opt="-L/app/boringssl/build/ssl -L/app/boringssl/build/crypto -L/app/pcre2/lib -Wl,-rpath,/app/boringssl/build/ssl" \
@@ -174,7 +197,7 @@ RUN mkdir -p /app/deps && \
 
 
 # # Grab the distroless static container.
- FROM gcr.io/distroless/base:nonroot as nginx
+ FROM gcr.io/distroless/base:nonroot AS nginx
 
 COPY --from=nginx-build /var/log/nginx/ /var/log/nginx/
 COPY --from=nginx-build /var/cache/nginx/ /var/cache/nginx/
