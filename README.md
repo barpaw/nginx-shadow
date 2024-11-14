@@ -108,7 +108,7 @@ docker run -d -p 80:80 -p 443:443 --name nginx-shadow nginx-shadow:0.0.1
 
 - [Official NGINX Documentation](https://nginx.org/en/docs/)
 - [HTTP/3 Explained](https://quic.nginx.org/)
-- [Cloudflare Blog](https://blog.cloudflare.com/)
+- [Cloudflare blog post about their zlib lib](https://blog.cloudflare.com/cloudflare-fights-cancer/) 
 
 ---
 
