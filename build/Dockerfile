@@ -15,6 +15,9 @@ ARG BORINGSSL_COMMIT_SHA=571c76e919c0c48219ced35bef83e1fc83b00eed
 ARG HEADERS_MORE_NGINX_VERSION=0.37
 ARG NGINX_DEVEL_NGINX_VERSION=0.3.3
 ARG SET_MISC_NGINX_VERSION=0.33
+ARG VTS_NGINX_VERSION=0.2.2
+ARG STS_NGINX_VERSION=0.1.1
+ARG STS_STREAM_NGINX_VERSION=0.1.1
 
 # NGINX PATCH FILENAME
 ARG NGINX_PATCH_FILENAME="nginx-1.26.2"
@@ -114,6 +117,25 @@ RUN echo "Cloning ngx_devel_kit version ${NGINX_DEVEL_NGINX_VERSION}" && \
     cd /app/ngx_devel_kit && \
     git checkout tags/v${NGINX_DEVEL_NGINX_VERSION} -b build
 
+# Clone the nginx-module-vts repository and checkout the specific tag
+RUN echo "Cloning nginx-module-vts version ${VTS_NGINX_VERSION}" && \
+    git clone https://github.com/vozlt/nginx-module-vts.git /app/nginx-module-vts && \
+    cd /app/nginx-module-vts && \
+    git checkout tags/v${VTS_NGINX_VERSION} -b build
+
+# Clone the nginx-module-sts repository and checkout the specific tag
+RUN echo "Cloning nginx-module-sts version ${STS_NGINX_VERSION}" && \
+git clone https://github.com/vozlt/nginx-module-sts.git /app/nginx-module-sts && \
+cd /app/nginx-module-sts && \
+git checkout tags/v${STS_NGINX_VERSION} -b build
+
+# Clone the nginx-module-stream-sts repository and checkout the specific tag
+RUN echo "Cloning nginx-module-stream-sts version ${STS_STREAM_NGINX_VERSION}" && \
+    git clone https://github.com/vozlt/nginx-module-stream-sts.git /app/nginx-module-stream-sts && \
+    cd /app/nginx-module-stream-sts && \
+    git checkout tags/v${STS_STREAM_NGINX_VERSION} -b build
+
+
 # Create temp folders
 RUN mkdir -p /var/cache/nginx/client_temp && \
   mkdir -p /var/cache/nginx/proxy_temp
@@ -143,6 +165,8 @@ RUN cd /app/nginx-${NGINX_VERSION} && \
   --with-http_v2_module \
   --with-http_v3_module \
   --with-http_stub_status_module \
+  --with-stream \
+  --with-stream_ssl_module \
   --without-http_ssi_module \
   --without-http_userid_module \
   --without-http_mirror_module \
@@ -163,6 +187,9 @@ RUN cd /app/nginx-${NGINX_VERSION} && \
   --add-module=/app/ngx_devel_kit \
   --add-module=/app/set-misc-nginx-module \
   --add-module=/app/headers-more-nginx-module  \
+  --add-module=/app/nginx-module-vts \
+  --add-module=/app/nginx-module-sts \
+  --add-module=/app/nginx-module-stream-sts \
   --with-cc=c++ \
   --with-cc-opt="-I/app/boringssl/include -I/app/pcre2/include -O2 -x c" \
   --with-ld-opt="-L/app/boringssl/build/ssl -L/app/boringssl/build/crypto -L/app/pcre2/lib -Wl,-rpath,/app/boringssl/build/ssl" \
