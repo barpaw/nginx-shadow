@@ -1,78 +1,119 @@
 ![Logo](Logo.png)
 
-# nginx-shadow
+# **nginx-shadow**
 
-## NGINX Custom Build with HTTP/3 (QUIC)
+## **Custom NGINX Build with HTTP/3 (QUIC) Support**
 
-This project contains a custom NGINX build with additional support for HTTP/3 (QUIC). Additionally, it includes a patch to remove server information from the HTTP headers for improved security.
+`nginx-shadow` is a custom NGINX build that includes support for HTTP/3 (QUIC) along with additional modules and patches to enhance server security. This build conceals server details by hiding the `Server` header and masking version information, making it harder for attackers to identify the server software.
 
-## Changes compared to the original version of NGINX
+---
 
-- [X] Configure the Dockerfile to compile NGINX with the latest version and up-to-date core dependencies.
-    - [X] [nginx (1.26.2)](https://nginx.org/en/download.html)
-    - [X] [pcre2 (10.44)](https://github.com/PCRE2Project/pcre2/releases)
-    - [X] [boringssl](https://github.com/google/boringssl/commits/master/) 
-    - [X] [zlib](https://github.com/cloudflare/zlib/commits/gcc.amd64/) [(cloudflare)](https://blog.cloudflare.com/cloudflare-fights-cancer/) 
-- [X] Create a patch to remove the Server header and change default and error messages in the NGINX source to enhance security by preventing the server's name and version from being exposed. [[See Details]](#changes-in-nginx-source-code)
-- [ ] Nginx built-in modules selection.
-    - [X] Add support for HTTP/3 (QUIC)
-    - [ ] Hardening
-- [ ] Nginx Third-party modules selection.
-    - [X] Add support for VTS (Virtual Traffic Status) and STS (Stream TLS) modules.
-    - [ ] Add Brotli compression support, powered by ngx_brotli.
-    - [ ] Add GeoIP2 support, powered by ngx_http_geoip2_module.
-    - [ ] Add Headers More support, powered by ngx_headers_more.
+## **Key Changes Compared to the Original NGINX**
 
-## Changes in Nginx Source Code
+### ✅ **Modifications in the Dockerfile:**
+- Compiling NGINX with the latest version and updated core dependencies:
+  - **NGINX**: [1.26.2](https://nginx.org/en/download.html)
+  - **PCRE2**: [10.44](https://github.com/PCRE2Project/pcre2/releases)
+  - **BoringSSL**: [commit](https://github.com/google/boringssl/commits/master/)
+  - **Zlib (Cloudflare)**: [zlib-cf](https://github.com/cloudflare/zlib/commits/gcc.amd64)
+- Added a custom patch to remove the `Server` header and modify default error messages to prevent the exposure of server details.
 
-In the patch applied to the Nginx source code during the image build process to make it harder to determine the name and version of the web server, the following changes were implemented:
+### 🛠 **NGINX Module Selection:**
+- **Built-in Modules**:
+  - ✅ Support for HTTP/3 (QUIC)
+  - ⏳ Hardening (in progress)
+- **Third-party Modules**:
+  - ✅ **VTS (Virtual Traffic Status)** for HTTP traffic monitoring.
+  - ✅ **STS (Stream TLS Status)** for monitoring TLS streams.
+  - ✅ **Stream STS** for stream protocol monitoring.
+  - ⏳ Brotli compression (ngx_brotli).
+  - ⏳ GeoIP2 support (ngx_http_geoip2_module).
+  - ⏳ Headers More (ngx_headers_more).
 
-- **Removal of the ``Server`` header:** The source code was modified to either remove or mask the Server header in HTTP responses. By default, Nginx sends the Server header containing the name "nginx" and its version. This patch ensures that the Server header is no longer included in the response, preventing external users from discovering the server's identity.
-- **Modification of static responses such as ``"Welcome to nginx!"``:** Nginx often returns default static responses that reveal it is running, such as the "Welcome to nginx!" message displayed on default or unconfigured pages. This patch changes those default responses to either remove the reference to Nginx or replace it with a generic message to obscure the server's identity.
-- **Modification of error responses and their statuses:** The patch alters the way Nginx handles HTTP error responses, such as ``404 (Not Found)`` or ``500 (Internal Server Error)``. Typically, Nginx may include the server's name in these error messages. The patch modifies these responses so that they no longer include references to Nginx or its version. Additionally, the error status messages are made more generic, ensuring no information about the server is leaked in error responses.
+---
 
+## **Changes in NGINX Source Code**
 
-These changes improve the security of the server by preventing automatic detection tools from identifying the server software and version, thereby reducing the risk of targeted attacks.
+During the build process, a patch is applied to the NGINX source code with the following modifications:
 
-### Build information
+- **Removal of the `Server` Header**:
+  - By default, NGINX sends the `Server` header containing its name and version in HTTP responses. This patch removes the header to prevent server identification by attackers.
+  
+- **Modification of Default Static Responses**:
+  - The default `"Welcome to nginx!"` message and other static content are altered to conceal any references to NGINX.
 
-#### Core dependencies
+- **Modification of Error Responses**:
+  - Error messages like `404 Not Found` and `500 Internal Server Error` are adjusted to remove any references to NGINX or its version. This ensures that no server information is exposed in error responses.
 
-| Name                | Version/Commit/Tag                              | Repo/Site                                               | Info                                    |
-|---------------------|-------------------------------------------------|---------------------------------------------------------|----------------------------------------|
-| **nginx**           | [1.26.2](https://github.com/nginx/nginx/tree/release-1.26.2)    | [nginx](https://github.com/nginx/nginx) | High-performance web server and reverse proxy                            |
-| **boringssl**       | [571c76e](https://github.com/google/boringssl/commit/571c76e919c0c48219ced35bef83e1fc83b00eed) | [boringssl](https://github.com/google/boringssl) | Optimized SSL library enabling HTTP/3 (QUIC) |
-| **pcre2**           | [10.44](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.44) | [pcre2](https://github.com/PCRE2Project/pcre2) | Advanced regular expression matching library |
-| **zlib-cf**         | [872e5fb](https://github.com/cloudflare/zlib/commit/872e5fb3cf88bb281e19a8327b3ea0889cc34773) | [zlib-cf](https://github.com/cloudflare/zlib) | Zlib optimized by Cloudflare, incompatible with 32-bit processors|
+These changes enhance the server's security by preventing automated tools from detecting the server type and version, reducing the risk of targeted attacks.
 
-#### Modules
+---
 
+## **Build Information**
 
-| Name| Version/Commit/Tag | Repo/Site                                               | Description                                                                                       |
-|---------------------------|-------------------------------------|-------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| **ngx_headers_more**         | 0.37                                 | [ngx_headers_more](https://github.com/openresty/headers-more-nginx-module) | Provides additional control over HTTP headers, allowing modifications to headers sent by NGINX     |
-| **ngx_devel_kit**  | 0.3.3                                | [ngx_devel_kit](https://github.com/vision5/ngx_devel_kit)         | Toolkit for extending NGINX with custom directives and additional features                         |
-| **ngx_set_misc**             | 0.33                                 | [ngx_set_misc](https://github.com/openresty/set-misc-nginx-module)    | Adds complex variable manipulation capabilities, enhancing NGINX configuration flexibility         |
+### **Core Dependencies**
 
+| **Name**            | **Version/Commit/Tag**                        | **Repository**                                             | **Description**                                     |
+|---------------------|----------------------------------------------|------------------------------------------------------------|-----------------------------------------------------|
+| **nginx**           | [1.26.2](https://github.com/nginx/nginx/tree/release-1.26.2) | [nginx](https://github.com/nginx/nginx) | High-performance web server and reverse proxy      |
+| **boringssl**       | [571c76e](https://github.com/google/boringssl/commit/571c76e919c0c48219ced35bef83e1fc83b00eed) | [boringssl](https://github.com/google/boringssl) | Optimized SSL library enabling HTTP/3 (QUIC)       |
+| **pcre2**           | [10.44](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.44) | [pcre2](https://github.com/PCRE2Project/pcre2) | Advanced regular expression matching library       |
+| **zlib-cf**         | [872e5fb](https://github.com/cloudflare/zlib/commit/872e5fb3cf88bb281e19a8327b3ea0889cc34773) | [zlib-cf](https://github.com/cloudflare/zlib) | Cloudflare-optimized zlib (incompatible with 32-bit) |
 
-### Commands
+---
 
-**Create Patch**
-```
+### **Modules**
+
+| **Name**                | **Version/Commit/Tag**                       | **Repository**                                             | **Description**                                    |
+|-------------------------|----------------------------------------------|------------------------------------------------------------|----------------------------------------------------|
+| **ngx_headers_more**    | 0.37                                         | [ngx_headers_more](https://github.com/openresty/headers-more-nginx-module) | Control over HTTP headers                          |
+| **ngx_set_misc**        | 0.33                                         | [ngx_set_misc](https://github.com/openresty/set-misc-nginx-module) | Adds advanced variable manipulation capabilities   |
+| **nginx-module-vts**    | 0.2.2                                        | [nginx-module-vts](https://github.com/vozlt/nginx-module-vts) | HTTP traffic monitoring                            |
+| **nginx-module-sts**    | 0.1.1                                        | [nginx-module-sts](https://github.com/vozlt/nginx-module-sts) | Stream TLS traffic monitoring                      |
+| **nginx-module-stream-sts**          | 0.1.1                                        | [nginx-module-stream-sts](https://github.com/vozlt/nginx-module-stream-sts) | Stream protocol monitoring                         |
+
+---
+
+## **Build Instructions**
+
+### **Creating the Patch**
+
+To create a patch for NGINX:
+
+```bash
 cd sandbox
-```
-```
 diff -ruN nginx-1.26.2/ nginx-1.26.2_changes/ > ../build/nginx-1.26.2.patch
 ```
-**Docker | Build image**
-```
+
+### **Building the Docker Image**
+
+To build the Docker image:
+
+```bash
 cd build
-```
-```
-docker build . -t nginx-shadow:0.0.1 --progress=plain 
+docker build . -t nginx-shadow:0.0.1 --progress=plain
 ```
 
-**Docker | Run container with image**
+### **Running the Docker Container**
+
+To run the container using the built image:
+
+```bash
+docker run -d -p 80:80 -p 443:443 --name nginx-shadow nginx-shadow:0.0.1
 ```
-docker run nginx-shadow:0.0.1    
-```
+
+---
+
+## **Useful Links**
+
+- [Official NGINX Documentation](https://nginx.org/en/docs/)
+- [HTTP/3 Explained](https://quic.nginx.org/)
+- [Cloudflare Blog](https://blog.cloudflare.com/)
+
+---
+
+## **License**
+
+This project is released under the **MIT License**.
+
+---
