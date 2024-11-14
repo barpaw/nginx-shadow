@@ -18,47 +18,18 @@ ARG SET_MISC_NGINX_VERSION=0.33
 ARG VTS_NGINX_VERSION=0.2.2
 ARG STS_NGINX_VERSION=0.1.1
 ARG STS_STREAM_NGINX_VERSION=0.1.1
+ARG BROTLI_NGINX_COMMIT_SHA=a71f9312c2deb28875acc7bacfdd5695a111aa53
+
 
 # NGINX PATCH FILENAME
 ARG NGINX_PATCH_FILENAME="nginx-1.26.2"
-
-# Set TimeZone
-#ENV TZ=Europe/Warsaw
-#RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Add nginx user
 RUN addgroup -S nonroot && adduser -S -G nonroot -s /bin/false nonroot
 
 # Download needed packages from repository
-# RUN apk update && \
-#     apk add --no-cache --virtual .build-deps \
-#       linux-headers \
-#       build-base \
-#       curl \
-#       git \
-#       cmake \
-#       wget \
-#       gcc \
-#       make \
-#       unzip \
-#       ca-certificates \
-#       autoconf \
-#       automake \
-#       libtool \
-#       pkgconf \
-#       zlib-dev \
-#       openssl-dev \
-#       pcre-dev \
-#       libxml2-dev \
-#       yajl-dev \
-#       lua5.2-dev \
-#       geoip-dev \
-#       libcurl \
-#       pax-utils && \
-#     rm -rf /var/cache/apk/*
-
-RUN apk add --no-cache git make cmake ninja gcc openssl-dev linux-headers g++ perl-dev patch bzip2-dev readline-dev libedit-dev zlib-dev libunwind-dev
-
+RUN apk add --no-cache git make cmake ninja gcc openssl-dev linux-headers g++ perl-dev patch bzip2-dev readline-dev libedit-dev zlib-dev libunwind-dev && \
+    rm -rf /var/cache/apk/*
 
 # Downloading NGINX
 RUN echo "Downloading NGINX version ${NGINX_VERSION}" && \
@@ -135,6 +106,18 @@ RUN echo "Cloning nginx-module-stream-sts version ${STS_STREAM_NGINX_VERSION}" &
     cd /app/nginx-module-stream-sts && \
     git checkout tags/v${STS_STREAM_NGINX_VERSION} -b build
 
+# Clone the ngx_brotli repository and checkout the specific commit
+RUN echo "Cloning ngx_brotli with commit ${BROTLI_NGINX_COMMIT_SHA}" && \
+    git clone https://github.com/google/ngx_brotli.git /app/ngx_brotli && \
+    cd /app/ngx_brotli && \
+    git checkout ${BROTLI_NGINX_COMMIT_SHA} -b build && \
+    git submodule update --init --recursive && \
+    mkdir -p /app/ngx_brotli/deps/brotli/out && \
+    cd /app/ngx_brotli/deps/brotli && \
+    cmake -DCMAKE_BUILD_TYPE=Release . && \
+    make -j$(nproc) && \
+    make install
+
 
 # Create temp folders
 RUN mkdir -p /var/cache/nginx/client_temp && \
@@ -190,9 +173,10 @@ RUN cd /app/nginx-${NGINX_VERSION} && \
   --add-module=/app/nginx-module-vts \
   --add-module=/app/nginx-module-sts \
   --add-module=/app/nginx-module-stream-sts \
+  --add-module=/app/ngx_brotli \
   --with-cc=c++ \
   --with-cc-opt="-I/app/boringssl/include -I/app/pcre2/include -O2 -x c" \
-  --with-ld-opt="-L/app/boringssl/build/ssl -L/app/boringssl/build/crypto -L/app/pcre2/lib -Wl,-rpath,/app/boringssl/build/ssl" \
+  --with-ld-opt="-L/app/ngx_brotli/deps/brotli/out -L/app/boringssl/build/ssl -L/app/boringssl/build/crypto -L/app/pcre2/lib -Wl,-rpath,/app/boringssl/build/ssl" \
   --with-pcre-jit \
   --with-zlib=/app/zlib-cf \
   --with-debug && \

@@ -23,12 +23,12 @@
   - ✅ Support for HTTP/3 (QUIC)
   - ⏳ Hardening (in progress)
 - **Third-party Modules**:
-  - ✅ **VTS (Virtual Traffic Status)** for HTTP traffic monitoring.
-  - ✅ **STS (Stream TLS Status)** for monitoring TLS streams.
-  - ✅ **Stream STS** for stream protocol monitoring.
-  - ⏳ Brotli compression (ngx_brotli).
-  - ⏳ GeoIP2 support (ngx_http_geoip2_module).
-  - ⏳ Headers More (ngx_headers_more).
+    - ✅ **VTS**: HTTP traffic monitoring.
+    - ✅ **STS**: TLS stream monitoring.
+    - ✅ **Stream STS**: Stream protocol monitoring.
+    - ✅ **Brotli**: High-performance compression for faster content delivery.
+    - ✅ **Headers More**: Modify HTTP headers for enhanced control.
+    - ⏳ **GeoIP2**: Location-based routing and access control.
 
 ---
 
@@ -71,6 +71,7 @@ These changes enhance the server's security by preventing automated tools from d
 | **nginx-module-vts**    | 0.2.2                                        | [nginx-module-vts](https://github.com/vozlt/nginx-module-vts) | HTTP traffic monitoring                            |
 | **nginx-module-sts**    | 0.1.1                                        | [nginx-module-sts](https://github.com/vozlt/nginx-module-sts) | Stream TLS traffic monitoring                      |
 | **nginx-module-stream-sts**          | 0.1.1                                        | [nginx-module-stream-sts](https://github.com/vozlt/nginx-module-stream-sts) | Stream protocol monitoring                         |
+| **ngx_brotli**          | [a71f931](https://github.com/google/ngx_brotli/commit/a71f9312c2deb28875acc7bacfdd5695a111aa53) | [ngx_brotli](https://github.com/google/ngx_brotli) | High-performance Brotli compression algorithm      |
 
 ---
 
@@ -117,3 +118,4 @@ docker run -d -p 80:80 -p 443:443 --name nginx-shadow nginx-shadow:0.0.1
 This project is released under the **MIT License**.
 
 ---
+
