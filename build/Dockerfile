@@ -8,8 +8,8 @@ WORKDIR /app
 # NGINX CORE
 ARG NGINX_VERSION=1.26.2
 ARG PCRE2_VERSION=10.44
-ARG ZLIB_CLOUDFLARE_COMMIT_SHA=872e5fb3cf88bb281e19a8327b3ea0889cc34773
-ARG BORINGSSL_COMMIT_SHA=571c76e919c0c48219ced35bef83e1fc83b00eed
+ARG ZLIB_VERSION=1.3.1
+ARG BORINGSSL_COMMIT_SHA=c691779ed0e98b36eff7ad945a738c402f127122
 
 # 3RD PARTY MODULES
 ARG HEADERS_MORE_NGINX_VERSION=0.37
@@ -19,7 +19,7 @@ ARG VTS_NGINX_VERSION=0.2.2
 ARG STS_NGINX_VERSION=0.1.1
 ARG STS_STREAM_NGINX_VERSION=0.1.1
 ARG BROTLI_NGINX_COMMIT_SHA=a71f9312c2deb28875acc7bacfdd5695a111aa53
-
+ARG GEOIP2_NGINX_VERSION=3.4
 
 # NGINX PATCH FILENAME
 ARG NGINX_PATCH_FILENAME="nginx-1.26.2"
@@ -28,19 +28,19 @@ ARG NGINX_PATCH_FILENAME="nginx-1.26.2"
 RUN addgroup -S nonroot && adduser -S -G nonroot -s /bin/false nonroot
 
 # Download needed packages from repository
-RUN apk add --no-cache git make cmake ninja gcc openssl-dev linux-headers g++ perl-dev patch bzip2-dev readline-dev libedit-dev zlib-dev libunwind-dev && \
+RUN apk add --no-cache git make cmake ninja gcc openssl-dev linux-headers g++ perl-dev patch bzip2-dev readline-dev libedit-dev zlib-dev libunwind-dev libmaxminddb-dev && \
     rm -rf /var/cache/apk/*
 
 # Downloading NGINX
 RUN echo "Downloading NGINX version ${NGINX_VERSION}" && \
     wget "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" -O /app/nginx.tar.gz && tar xzvf /app/nginx.tar.gz
 
-# Clone and Build Cloudflare zlib library 
-RUN echo "Cloning zlib-cf... SHA: ${ZLIB_CLOUDFLARE_COMMIT_SHA}" && \
-    git clone https://github.com/cloudflare/zlib.git -b gcc.amd64 /app/zlib-cf && \
-    cd /app/zlib-cf && \
-    git checkout ${ZLIB_CLOUDFLARE_COMMIT_SHA} && \
-    echo "Building zlib-cf..." && \
+# Clone and Build zlib
+RUN echo "Cloning zlib... Version: ${ZLIB_VERSION}" && \
+    git clone https://github.com/madler/zlib.git /app/zlib && \
+    cd /app/zlib && \
+    git checkout tags/v${ZLIB_VERSION} -b build && \
+    echo "Building zlib..." && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-O3 -march=native -flto" .. && \
@@ -118,6 +118,12 @@ RUN echo "Cloning ngx_brotli with commit ${BROTLI_NGINX_COMMIT_SHA}" && \
     make -j$(nproc) && \
     make install
 
+# Clone the ngx_http_geoip2_module repository and checkout the specific tag
+RUN echo "Cloning ngx_http_geoip2_module version ${GEOIP2_NGINX_VERSION}" && \
+    git clone https://github.com/leev/ngx_http_geoip2_module.git /app/ngx_http_geoip2_module && \
+    cd /app/ngx_http_geoip2_module && \
+    git checkout tags/${GEOIP2_NGINX_VERSION} -b build
+
 
 # Create temp folders
 RUN mkdir -p /var/cache/nginx/client_temp && \
@@ -147,9 +153,12 @@ RUN cd /app/nginx-${NGINX_VERSION} && \
   --with-http_ssl_module \
   --with-http_v2_module \
   --with-http_v3_module \
+  --with-http_realip_module \
+  --with-http_auth_request_module \
   --with-http_stub_status_module \
   --with-stream \
   --with-stream_ssl_module \
+  --with-stream_realip_module \
   --without-http_ssi_module \
   --without-http_userid_module \
   --without-http_mirror_module \
@@ -159,7 +168,6 @@ RUN cd /app/nginx-${NGINX_VERSION} && \
   --without-http_uwsgi_module \
   --without-http_scgi_module \
   --without-http_grpc_module \
-  --without-http_gzip_module \
   --without-http_memcached_module \
   --http-log-path=/var/log/nginx/access.log \
   --http-client-body-temp-path=/var/cache/nginx/client_temp \
@@ -174,11 +182,12 @@ RUN cd /app/nginx-${NGINX_VERSION} && \
   --add-module=/app/nginx-module-sts \
   --add-module=/app/nginx-module-stream-sts \
   --add-module=/app/ngx_brotli \
+  --add-module=/app/ngx_http_geoip2_module \
   --with-cc=c++ \
   --with-cc-opt="-I/app/boringssl/include -I/app/pcre2/include -O2 -x c" \
   --with-ld-opt="-L/app/ngx_brotli/deps/brotli/out -L/app/boringssl/build/ssl -L/app/boringssl/build/crypto -L/app/pcre2/lib -Wl,-rpath,/app/boringssl/build/ssl" \
   --with-pcre-jit \
-  --with-zlib=/app/zlib-cf \
+  --with-zlib=/app/zlib \
   --with-debug && \
   echo $(eval $CONFIGURE) && \
   make -j$(nproc) && make install
@@ -208,7 +217,7 @@ RUN mkdir -p /app/deps && \
 
 
 # # Grab the distroless static container.
- FROM gcr.io/distroless/base:nonroot AS nginx
+FROM gcr.io/distroless/base:nonroot AS nginx
 
 COPY --from=nginx-build /var/log/nginx/ /var/log/nginx/
 COPY --from=nginx-build /var/cache/nginx/ /var/cache/nginx/
